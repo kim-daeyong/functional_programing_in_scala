@@ -1,0 +1,5 @@
+[0m[[0m[31merror[0m] [0m[0m/home/bigyo/data/workspace/devel/functionalPrac/scalaPrac/scalaprac/src/main/scala/example/Hello.scala:43:18: not enough arguments for method safeSum: (n: Int, acc: Int)Int.[0m
+[0m[[0m[31merror[0m] [0m[0mUnspecified value parameter acc.[0m
+[0m[[0m[31merror[0m] [0m[0m  println(safeSum(4))[0m
+[0m[[0m[31merror[0m] [0m[0m                 ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

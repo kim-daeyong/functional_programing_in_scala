@@ -1,0 +1,4 @@
+[debug] [chapter3-test] Classpath dependencies List()
+[debug] [chapter3-test] Dependencies from configurations List(chapter3)
+[debug] Bloop wrote the configuration of project 'chapter3-test' to '/home/bigyo/data/workspace/devel/functionalPrac/chapter3/chapter3/.bloop/chapter3-test.json'
+[success] Generated .bloop/chapter3-test.json
