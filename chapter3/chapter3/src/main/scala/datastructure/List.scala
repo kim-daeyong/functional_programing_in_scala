@@ -52,7 +52,7 @@ object List {
         else drop(tail(list), n - 1)
     }
 
-    // tailRec이 아님, memory lick 발생 가능
+    // tailRec이 아님, memory leak 발생 가능
     def foldRight[A,B](list: List[A], z: B)(f: (A,B) => B): B = list match{
         case Nil => z
         case Cons(h,t) => f(h, foldRight(t, z)(f))
@@ -74,6 +74,24 @@ object List {
         foldLeft(list, 0)((x,y) => x + y)
     }
 
+    def reverse[A](list: List[A]):List[A] =
+        foldLeft(list, List(): List[A])((b,a) => Cons(a,b))
+
+    def append[A](list: List[A], list2: List[A]):List[A] =
+        foldLeft(reverse(list), list2)((b,a) => Cons(a,b))
+
+    def concatenate[A](list: List[List[A]]): List[A] =
+        foldLeft(reverse(list), List() :List[A])((b,a) => append(a,b))
+
+    // memory leak 이 나지않는 foldRight.. 
+    def foldRight2[A,B](list: List[A], z: B)(f: (A,B) => B): B =
+        foldLeft(list, (b:B) => b)((g,a) => b => g(f(a, b)))(z)
+
+    def addOne(list: List[Int]): List[Int] = 
+        foldRight2(list, List(): List[Int])((a,b) => Cons(a + 1, b))
+
+    def map[A,B](list: List[A])(f: A => B): List[B] = ???
+
     def main(args: Array[String]): Unit = {
         val list = List(1,2,3)
 
@@ -81,7 +99,13 @@ object List {
 
         println(drop(list, 1))
 
+        val list2 = List(list,List(4,5,6))
+
         // println(foldRight(list, 3))
         println(sumFoldLeft(list))
+
+        println(concatenate(list2))
+
+        println(addOne(list))
     }
 }
