@@ -90,7 +90,8 @@ object List {
     def addOne(list: List[Int]): List[Int] = 
         foldRight2(list, List(): List[Int])((a,b) => Cons(a + 1, b))
 
-    def map[A,B](list: List[A])(f: A => B): List[B] = ???
+    def map[A,B](list: List[A])(f: A => B): List[B] = 
+        foldRight2(list, List(): List[B])((h,t) => Cons(f(h), t))
 
     def main(args: Array[String]): Unit = {
         val list = List(1,2,3)
