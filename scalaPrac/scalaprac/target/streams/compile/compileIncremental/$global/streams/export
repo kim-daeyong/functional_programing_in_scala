@@ -1,1 +1,0 @@
-scalac -bootclasspath /home/bigyo/.ivy2/cache/org.scala-lang/scala-library/jars/scala-library-2.12.8.jar -classpath /home/bigyo/data/workspace/devel/functionalPrac/scalaPrac/scalaprac/target/scala-2.12/classes /home/bigyo/data/workspace/devel/functionalPrac/scalaPrac/scalaprac/src/main/scala/example/Hello.scala
