@@ -1,3 +1,33 @@
 *.class
 *.log
-.vscode
+
+# sbt specific
+.cache
+.history
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+**/.bloop
+.bsp/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+
+.idea
+
+# ENSIME specific
+.ensime_cache/
+.ensime
+
+.metals/
+.ammonite/
+metals.sbt
+metals/project/
+
+#vscode
+.vscode/
