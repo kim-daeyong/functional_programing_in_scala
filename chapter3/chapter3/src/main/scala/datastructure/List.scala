@@ -2,6 +2,8 @@ package datastructure
 
 import scala.annotation.tailrec
 
+
+// singly linked list
 sealed trait List[+A] {}
 case object Nil extends List[Nothing]
 
@@ -52,7 +54,7 @@ object List {
         else drop(tail(list), n - 1)
     }
 
-    // tailRec이 아님, memory leak 발생 가능
+    // tailRec이 아님, memory leak 발생 가능, z : base, 
     def foldRight[A,B](list: List[A], z: B)(f: (A,B) => B): B = list match{
         case Nil => z
         case Cons(h,t) => f(h, foldRight(t, z)(f))
@@ -93,6 +95,22 @@ object List {
     def map[A,B](list: List[A])(f: A => B): List[B] = 
         foldRight2(list, List(): List[B])((h,t) => Cons(f(h), t))
 
+    def filter[A](list: List[A])(f: A => Boolean): List[A] =
+        foldRight2(list, List(): List[A])((a,b) => if (f(a)) Cons(a,b) else b)
+
+    def flatMap[A,B](list: List[A])(f: A => List[B]): List[B] = 
+        // concatenate(map(list)(f))
+        foldRight2(list, List(): List[B])((a,b) => append(f(a), b))
+
+    def flatMapToFilter[A](list: List[A])(f: A => Boolean): List[A] =
+        flatMap(list)((a) => if (f(a)) List(a) else List())
+
+    def zipWith[A, B, C](list: List[A], list2: List[B])(f: (A,B) => C): List[C] = (list, list2) match {
+        case (Nil, _) => Nil
+        case (_, Nil) => Nil
+        case (_,_) => 
+    }
+
     def main(args: Array[String]): Unit = {
         val list = List(1,2,3)
 
@@ -108,5 +126,11 @@ object List {
         println(concatenate(list2))
 
         println(addOne(list))
+
+        println(map(list)(x => x+1))
+
+        println(filter(list)(_ > 1))
+
+        println(flatMapToFilter(list)(_ > 1))
     }
 }
