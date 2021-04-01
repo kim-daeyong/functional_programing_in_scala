@@ -62,6 +62,8 @@ object Option {
         case (Some(a), Some(b)) => Some(f(a,b))
     }
     // how 보다 what을 생각하자 what 을 명확하면 how 가 나온다.
+
+    //map2 => 두개의 파라미터를 하나로
     def map3[A,B,C](oa: Option[A], ob: Option[B])(f: (A, B) => C): Option[C] = 
         // oa  =>  ob  =>  oc  
         //   flatmap   map
@@ -96,15 +98,18 @@ object Option {
     def traverse2[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] =
         sequence(a.map(aa => f(aa)))
 
-    def sequence2[A](a: List[Option[A]]): Option[List[A]] = ???
-    
+    def sequence2[A](a: List[Option[A]]): Option[List[A]] = 
+        traverse(a)(aa => aa)
     
 
     def main(args: Array[String]): Unit = {
         // val a = new Exception("fail")
         val a = 3
+        var b = List(Some(5), Some(6))
+        var d = List(1,2,3)
         val oa = Try(a).map(_+1) // try catch 문은 사이드 이펙트이다. 이를 가려준다. exceoption을 숨기고 핸들링 할 수 있다.
         println(Some(4).map(_ => 5))
+        println(sequence(b))
     }
 
 }
