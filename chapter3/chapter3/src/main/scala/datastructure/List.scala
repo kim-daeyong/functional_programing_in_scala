@@ -85,7 +85,7 @@ object List {
     def concatenate[A](list: List[List[A]]): List[A] =
         foldLeft(reverse(list), List() :List[A])((b,a) => append(a,b))
 
-    // memory leak 이 나지않는 foldRight.. 
+    // memory leak 이 나지않는 foldRight..   O(n)
     def foldRight2[A,B](list: List[A], z: B)(f: (A,B) => B): B =
         foldLeft(list, (b:B) => b)((g,a) => b => g(f(a, b)))(z)
 

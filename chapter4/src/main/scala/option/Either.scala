@@ -97,5 +97,6 @@ object Either {
         sequence(as.map(a => f(a)))
 
     def sequence2[E, A](es: List[Either[E, A]]): Either[E, List[A]] = 
-        traverse(es)(a => a)
+        // traverse(es)(a => a)
+        traverse(es)(identity)// x를 받아서 x를 내보낸다.
 }
