@@ -56,6 +56,7 @@ sealed trait Stream[+A] {
         case Empty => Nil
     }
 
+    // n개만 받는다.
     def take(n: Int): Stream[A] = this match {
         case Cons(h, t) if n > 0 => cons(h(), t().take(n-1))
         case _ => empty
@@ -83,10 +84,13 @@ sealed trait Stream[+A] {
             case Empty => None
         }
 
+    // boolean 통과만
     def takeWhile(p: A => Boolean): Stream[A] = ???
 
+    // 한셋트씩
     def zipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] = ???
 
+    // 다
     def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = ???
 
 }
