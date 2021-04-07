@@ -85,13 +85,98 @@ sealed trait Stream[+A] {
         }
 
     // boolean 통과만
-    def takeWhile(p: A => Boolean): Stream[A] = ???
+    def takeWhile(p: A => Boolean): Stream[A] = this match{
+        case Cons(h, t) if p(h()) => cons(h(), t().takeWhile((p)))
+        case _ => empty
+    }
 
     // 한셋트씩
-    def zipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] = ???
+    def zipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] = (this, s2) match {
+        case (Empty, _) => empty
+        case (_, Empty) => empty
+        case (Empty, Empty) => empty 
+        case (Cons(h1, t1), Cons(h2, t2)) => cons(f(h1(), h2()), t1().zipWith(t2())(f))
+    }
 
     // 다
-    def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = ???
+    def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = (this, s2) match {
+        case (Empty, Empty) => empty 
+        case (Empty, Cons(h, t)) => cons((None, Some(h())), this.zipAll(t()))
+        case (Cons(h, t), Empty) => cons((Some(h()), None), t().zipAll(s2))
+        case (Cons(h1, t1), Cons(h2, t2)) => cons((Some(h1()), Some(h2())), t1().zipAll(t2()))
+    }
+
+    def zipWithAll[B, C](s2: Stream[B])(f: (Option[A], Option[B]) => C): Stream[C] = ???
+
+    //스트림읠 열어보지않고 하나로 만든다.
+    def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+        case Empty => z
+        case Cons(h, t) => f(h(), t().foldRight(z)(f))
+    }
+
+    // tolist = 스트림을 확인한다.
+    // cons(1. ***)
+    // unfold 스트림을 열지않은채 값을 확인한다.
+    def startsWith[A](s: Stream[A]): Boolean = 
+        unfold(this, s)({
+            case (Empty, _) => None
+            case (_, Empty) => None
+            case (Cons(h1, t1), Cons(h2, t2)) => if(h1 ==  h2) Some((true, (t1(), t2()))) else Some((false, (t1(), t2())))
+        }).forAll(_ == true)
+    
+    def mapViaFoldRight[B](f: A => B): Stream[B] =
+        this.foldRight(empty: Stream[B])((a, b) => cons(f(a), b))
+
+    def takeViaUnfold(n: Int): Stream[A] =
+        unfold((this, n))({
+            case (Cons(h, t), 1) => Some(h(), (empty, 0))
+            case (Cons(h, t), n) => Some(h(), (t(), n-1))
+            case (Empty, _) => None
+        })
+
+    def drop(n: Int): Stream[A] = this match {
+        case Cons(h, t) if n > 0 => t().drop(n-1)
+        case _ if n == 0 => this
+        case _ => Empty
+    }
+
+    def exists(p: A => Boolean): Boolean = this match {
+        case Empty => false
+        case Cons(h, t) => if (p(h())) true else t().exists(p)
+    }
+
+    def exists2(p: A => Boolean): Boolean = 
+        this.foldRight(false)((a, b) => p(a) | (b))
+
+    def forAll(p: A => Boolean): Boolean =
+        this.foldRight(true)((a, b) => p(a) & b)
+
+    def headOption2: Option[A] =
+        this.foldRight(None:Option[A])((a, b) => Some(a))
+    
+    def takeWhile2(p: A => Boolean): Stream[A] =
+         this.foldRight(empty: Stream[A])((a, b) => if (p(a)) cons(a, b) else empty)
+    
+    def filter(f: A => Boolean): Stream[A] =
+        this.foldRight(empty: Stream[A])((a, b) => if (f(a)) cons(a, b) else b)
+
+    def append[B >: A](target: => Stream[B]): Stream[B] =
+        this.foldRight(target)(cons(_,_))
+
+    def flatMap[B](f: A => Stream[B]): Stream[B] =
+        this.foldRight(empty: Stream[B])((a, b) => f(a).append(b))
+    
+    // this 1, 2, 3 / s 1, 2
+    def startWith[A](s: Stream[A]): Boolean = ???
+
+    // this 1, 2, 3 Stream(Steam(1,2,3), Stream(2,3), Stream(3))
+    def tails: Stream[Stream[A]] = ???
+
+    // this 1, 2, 3 / s 2, 3
+    def hasSubSequence[A](s: Stream[A]): Boolean = ???
+
+    // this 1, 2, 3 base (a, b) => b : Stream[B]
+    def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = ???
 
 }
 
@@ -112,7 +197,22 @@ object Stream {
     def apply[A](as: A*): Stream[A] =
         if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
     
-    def unfold[A, S](z: S)(f: S => Option[(A,S)]): Stream[A] = ???
+    // 스트림 구축함수, 초기상태 하나와 다음상태 및 다음값을 산출하는 함수를 받는다
+    // 스트림을 생성, 스트림을 펼칠 수 있는 함수? 
+    def unfold[A, S](z: S)(f: S => Option[(A,S)]): Stream[A] = f(z) match {
+            case None => empty
+            case Some((h,s)) => cons(h, unfold(s)(f))
+        }
+
+    // def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+    //     case empty => z
+    //     case Cons(h, t) => f(h(), foldRight(t())(f))
+    // }
+
+    def ones:Stream[Int] = cons(1, ones)
+
+    def ones2: Stream[Int] = unfold(1)(_ => Some(1, 1))
+
 
     def main(args: Array[String]): Unit = {
 
@@ -125,6 +225,10 @@ object Stream {
         //     aa+bb
         // }
         // map(List(1,2,3), List(4,5,6)(_+_))
+
+        // toList() 써야 (lazy)
+
+        println(ones.mapViaFoldRight(_+1).take(5).toList)
 
     }
 
