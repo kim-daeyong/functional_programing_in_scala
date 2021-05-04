@@ -106,6 +106,12 @@ sealed trait Stream[+A] {
         case (Cons(h1, t1), Cons(h2, t2)) => cons((Some(h1()), Some(h2())), t1().zipAll(t2()))
     }
 
+    //generate = unfold, why???
+    def zipAllWithUnfold[B] (s2: Stream[B]): Stream[(Option[A], Option[B])] =
+    unfold((this, s2)) {
+        case (Cons(ah, at), Cons(bh, bt)) => Some((Some(ah()), Some(bh())), (at(), bt()))
+    }
+
     def zipWithAll[B, C](s2: Stream[B])(f: (Option[A], Option[B]) => C): Stream[C] = ???
 
     //스트림읠 열어보지않고 하나로 만든다.
@@ -197,10 +203,12 @@ sealed trait Stream[+A] {
     def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = 
         foldRight((z, Stream(z)))((a, p0) => {
         // p0 is passed by-name and used in by-name args in f and cons. So use lazy val to ensure only one evaluation...
-        lazy val p1 = p0
+        lazy val p1 = p0 // foldright limit
         val b2 = f(a, p1._1)
         (b2, cons(b2, p1._2))
         })._2
+
+
 
 }
 
