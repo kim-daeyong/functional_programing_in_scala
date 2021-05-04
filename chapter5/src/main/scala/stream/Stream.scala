@@ -155,7 +155,7 @@ sealed trait Stream[+A] {
         this.foldRight(None:Option[A])((a, b) => Some(a))
     
     def takeWhile2(p: A => Boolean): Stream[A] =
-         this.foldRight(empty: Stream[A])((a, b) => if (p(a)) cons(a, b) else empty)
+        this.foldRight(empty: Stream[A])((a, b) => if (p(a)) cons(a, b) else empty)
     
     def filter(f: A => Boolean): Stream[A] =
         this.foldRight(empty: Stream[A])((a, b) => if (f(a)) cons(a, b) else b)
@@ -167,16 +167,40 @@ sealed trait Stream[+A] {
         this.foldRight(empty: Stream[B])((a, b) => f(a).append(b))
     
     // this 1, 2, 3 / s 1, 2
-    def startWith[A](s: Stream[A]): Boolean = ???
+    def startWith[A](s: Stream[A]): Boolean = 
+        unfold((this, s))({
+            case (_, Empty) => None
+            case (Empty, _) => None
+            case (Cons(h1, t1), Cons(h2, t2)) => if(h1 == h2) Some((true, (t1(), t2()))) else Some((false, (t1(), t2())))
+        }).forAll(_ == true)
 
-    // this 1, 2, 3 Stream(Steam(1,2,3), Stream(2,3), Stream(3))
-    def tails: Stream[Stream[A]] = ???
+    def startWith2[A](s: Stream[A]): Boolean = 
+        zipAll(s).takeWhile(o => !o._2.isEmpty).forAll({
+            case (Some(h1), Some(h2)) => h1 == h2
+        })
+
+    // this 1, 2, 3 Stream(Steam(1,2,3), Stream(2,3), Stream(3), Stream())
+    def tails: Stream[Stream[A]] = 
+        unfold((this)){
+            case Empty => None
+            case s => Some(s, s drop 1)
+        } append Stream(empty)
+        
 
     // this 1, 2, 3 / s 2, 3
-    def hasSubSequence[A](s: Stream[A]): Boolean = ???
+    def hasSubSequence[A](s: Stream[A]): Boolean =
+        tails exists (_ startsWith(s))
 
     // this 1, 2, 3 base (a, b) => b : Stream[B]
-    def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = ???
+    // unfold 는 왼쪽에서 오른쪽
+    // foldRight 이용
+    def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] = 
+        foldRight((z, Stream(z)))((a, p0) => {
+        // p0 is passed by-name and used in by-name args in f and cons. So use lazy val to ensure only one evaluation...
+        lazy val p1 = p0
+        val b2 = f(a, p1._1)
+        (b2, cons(b2, p1._2))
+        })._2
 
 }
 
@@ -229,6 +253,8 @@ object Stream {
         // toList() 써야 (lazy)
 
         println(ones.mapViaFoldRight(_+1).take(5).toList)
+
+        println()
 
     }
 
