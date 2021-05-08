@@ -46,4 +46,10 @@ object State {
   def get[S]: State[S, S] = State(s => (s, s))
 
   def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+
+  def main(args: Array[String]): Unit = {
+    val test = unit(1).run(2)
+    println(test)
+    // println(simulateMachine())
+  }
 }
